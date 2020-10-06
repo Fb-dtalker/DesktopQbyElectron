@@ -1,0 +1,22 @@
+body {
+    background-size: 100%;
+    overflow: hidden;
+}
+
+#Block {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    left: 50px;
+    top: 50px;
+    background-color: aqua;
+}
+
+#Block2 {
+    width: 200px;
+    height: 400px;
+    position: absolute;
+    left: 50px;
+    top: 50px;
+    background-color: red;
+}

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>设置项</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="../desktopSys/dqwebpage.js"></script>
+    <script>
+        let win = require('electron').remote.getCurrentWindow()
+        let webpage = new DqWebpage(win, document);
+    </script>
+</head>
+
+<body>
+    <aside class="box" id="test">
+        <button id="btn" style="width: 100%;"></button>
+
+        <div class="title" style="border-bottom: 3px solid rgb(159, 160, 159);color: rgb(212, 212, 212);">
+            设定项
+        </div>
+        <div id="itemBox">
+            <div class="item">
+                <p class="p4button" onclick="showPage(0)">全局设定</p>
+            </div>
+            <div class="item">
+                <p class="p4button" onclick="showPage(1)">看板娘</p>
+            </div>
+            <div class="item">
+                <p class="p4button" onclick="showPage(2)">关于</p>
+            </div>
+        </div>
+    </aside>
+
+    <div id="ui">
+        <div class="settingContent" id="page0" style="width: 100%; height: 100%;margin-left:10px; display: none;">
+            <div style="margin-left: 0.5%;">
+                <div id="settingHeader">
+                    全局设定
+                </div>
+                <div class="link-top-thick" style="margin-bottom: 2%;"></div>
+                <div class="pageContent">
+                    <div>
+                        <div class="optionItem">
+                            <a style="cursor:default;">作用屏幕：</a>
+
+                            <a onclick="showAll4Screen()">全部屏幕</a><span class="link-right"></span><a onclick="closeScreen()">全部禁用</a>
+                            <span id="screenItem">
+                                <!-- <span class="link-right"></span><a>0号屏幕</a><span class="link-right"></span><a>1号屏幕</a> -->
+                            </span>
+
+                            <a style="display:fixed;float:right;" onclick="checkScreen()">检测</a>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="optionItem" style="width: 50%;">
+                            <a style="cursor:default;">启用效果：</a>
+                            <ul style="margin-left: 15%;list-style-type:none;">
+                                <li>
+                                    <span>点浪</span><a style="display:fixed;float:right; margin-left: 4%;" onclick="hideEffect(null, 'nest')">关闭</a><a style="display:fixed;float:right;" onclick="showEffect(null, 'nest')">启用</a>
+                                </li>
+                                <li>
+                                    <span>网格</span><a style="display:fixed;float:right; margin-left: 4%;" onclick="hideEffect(null, 'three-waves')">关闭</a><a style="display:fixed;float:right;" onclick="showEffect(null, 'three-waves')">启用</a>
+                                </li>
+                                <li>
+                                    <span>星点</span><a style="display:fixed;float:right; margin-left: 4%;" onclick="hideEffect(null, 'dynamic-stars')">关闭</a><a style="display:fixed;float:right;" onclick="showEffect(null, 'dynamic-stars')">启用</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="optionItem">
+                            <a style="cursor:default;">是否开机自启：</a>
+                            <span id="openAtLoginItem">
+                                <!-- <span class="link-right"></span><a>0号屏幕</a><span class="link-right"></span><a>1号屏幕</a> -->
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <style>
+                    #settingHeader {
+                        width: 100%;
+                        height: 10%;
+                        color: rgb(211, 211, 212);
+                        display: absolute;
+                        left: 50%;
+                        font-size: 3.2vw;
+                    }
+                    
+                    .link-top-thick {
+                        width: 90%;
+                        height: 0.2%;
+                        border-top: solid #d0d2d4 1px;
+                    }
+                    
+                    .link-top {
+                        width: 90%;
+                        height: 0.1%;
+                        border-top: solid #d0d2d4 1px;
+                    }
+                    
+                    .link-right {
+                        width: 5%;
+                        height: 30%;
+                        margin-left: 3%;
+                        margin-right: 3%;
+                        border-right: solid #d4d4d4 1px;
+                    }
+                    
+                    .optionItem {
+                        width: 90%;
+                        height: 6%;
+                        color: rgb(190, 190, 190);
+                        font-size: 2vw;
+                        user-select: none;
+                    }
+                    
+                    .optionItem a {
+                        cursor: pointer;
+                    }
+                </style>
+                <script>
+                    let screenItem = document.getElementById("screenItem");
+                    let openAtLoginItem = document.getElementById('openAtLoginItem');
+                    let remote = require('electron').remote;
+                    let app = remote.app;
+                    let dqDisplay = remote.getGlobal('dqglobal').dqDisplay;
+
+                    let dqConfig = remote.getGlobal('dqglobal').dqConfig;
+                    let activeEffect = dqConfig.GetConfig("activeEffect") || {};
+                    let activeDisplay = dqConfig.GetConfig("activeDisplay") || {};
+
+                    function addScreenItems() {
+                        screenItem.innerHTML = "";
+                        let displays = dqDisplay.GetDisplays();
+                        let activeEffect_temp = {};
+                        for (let index = 0; index < displays.length; ++index) {
+                            activeEffect_temp["display" + index] = (activeEffect["display" + index] == null ? [] : activeEffect["display" + index]);
+                            screenItem.innerHTML = screenItem.innerHTML + `<span class="link-right"></span><a onclick="showWindow4Screen(` + index + `)">` + index + `号屏幕</a>`;
+                        }
+                        activeEffect = activeEffect_temp;
+                    }
+                    addScreenItems();
+
+                    function addOpenAtLoginItem() {
+                        openAtLoginItem.innerHTML = "";
+
+                        if (app.getLoginItemSettings().openAtLogin) {
+                            openAtLoginItem.innerHTML = `<a style="margin-left:1%" onclick="setOpenAtLogin(false)">关闭自启</a>`;
+                        } else {
+                            openAtLoginItem.innerHTML = `<a style="margin-left:1%" onclick="setOpenAtLogin(true)">开启自启</a>`;
+                        }
+                    }
+                    addOpenAtLoginItem();
+
+                    function setOpenAtLogin(open) {
+                        if (!app.isPackaged) {
+                            return;
+                        }
+
+                        app.setLoginItemSettings({
+                            openAtLogin: open,
+                        });
+
+                        addOpenAtLoginItem();
+                    }
+
+                    function checkScreen() {
+                        dqDisplay.ShowSignWindows();
+                        addScreenItems();
+                    }
+
+                    function showAll4Screen() {
+                        let displays = dqDisplay.GetDisplays();
+                        for (let index = 0; index < displays.length; ++index) {
+                            showWindow4Screen(index);
+                        }
+                    }
+
+                    function closeScreen(index = null) {
+                        dqDisplay.CleanScreen(index);
+                        if (index == null) {
+                            for (let i = 0, len = dqDisplay.GetDisplays().length; i < len; ++i) {
+                                activeDisplay["display" + i] = 0;
+                            }
+                        }
+                        webpage.SendMessage4r2m("SetConfig", null, {
+                            key: "activeDisplay",
+                            value: activeDisplay
+                        });
+                    }
+
+                    function showWindow4Screen(index) {
+                        if (index == null) {
+                            return;
+                        }
+                        let list = dqDisplay.GetScreen2WindowsMap()
+                        if (list[index].length > 0) {
+                            return;
+                        }
+                        webpage.SendMessage4r2m("CreateWindow4Effect", null, {
+                            loadFile: "index.html",
+                            displayIndex: index
+                        })
+                        activeDisplay["display" + index] = 1;
+                        webpage.SendMessage4r2m("SetConfig", null, {
+                            key: "activeDisplay",
+                            value: activeDisplay
+                        });
+                    }
+
+                    function showEffect(index, key) {
+                        let wins = null;
+                        if (index != null) {
+                            wins = dqDisplay.GetWindowsByScreen(index);
+                            if (activeEffect["display" + index].indexOf(key) == -1) {
+                                activeEffect["display" + index].push(key);
+                            }
+                        } else {
+                            wins = dqDisplay.GetWindow();
+                            for (let i = 0, len = dqDisplay.GetDisplays().length; i < len; ++i) {
+                                if (dqDisplay.GetWindowsByScreen(i).length > 0 && activeEffect["display" + i].indexOf(key) == -1) {
+                                    activeEffect["display" + i].push(key);
+                                }
+                            }
+                        }
+                        for (let i = 0; i < wins.length; ++i) {
+                            wins[i].webContents.send("dqMessage4m2r", "showEffect", null, {
+                                key: key
+                            });
+                        }
+
+                        webpage.SendMessage4r2m("SetConfig", null, {
+                            key: "activeEffect",
+                            value: activeEffect
+                        });
+                    }
+
+                    function hideEffect(index, key) {
+                        let wins = null;
+                        if (index != null) {
+                            wins = dqDisplay.GetWindowsByScreen(index);
+                            let p = activeEffect["display" + index].indexOf(key);
+                            if (p != -1) {
+                                activeEffect["display" + index].splice(p, 1);
+                            }
+                        } else {
+                            wins = dqDisplay.GetWindow();
+                            for (let i = 0, len = dqDisplay.GetDisplays().length; i < len; ++i) {
+                                let p = activeEffect["display" + i].indexOf(key);
+                                if (dqDisplay.GetWindowsByScreen(i).length > 0 && p != -1) {
+                                    activeEffect["display" + i].splice(p, 1);
+                                }
+                            }
+                        }
+                        for (let i = 0; i < wins.length; ++i) {
+                            wins[i].webContents.send("dqMessage4m2r", "hideEffect", null, {
+                                key: key
+                            });
+                        }
+                        webpage.SendMessage4r2m("SetConfig", null, {
+                            key: "activeEffect",
+                            value: activeEffect
+                        });
+                    }
+                </script>
+            </div>
+        </div>
+        <div class="settingContent" id="page1" style="width: 100%; height: 100%;margin-left:10px; display: none;">
+            <div id="settingHeader">
+                关于看板娘之一
+            </div>
+            <div class="link-top-thick" style="margin-bottom: 2%;"></div>
+            <div class="pageContent">
+                <div>
+                    <div class="optionItem">
+                        <a style="cursor:default;user-select: text;">看板娘</a>
+                        <img src="../../static/xiwu_big.png" style="width:29%;display:fixed;float:right;">
+                    </div>
+                </div>
+                <div>
+                    <div class="optionItem" style="width: 70%;">
+                        <a style="cursor:default;">姓名：</a><a style="cursor:default;user-select: text;">夕雾</a>
+                        <ul style="list-style-type:none;">
+                            <li>
+                                <span>性别：</span><a>[个人隐私]</a>
+                            </li>
+                            <li>
+                                <span>出生日期：</span><a>2020年10月4日</a>
+                            </li>
+                            <li>
+                                <span>性格：</span><a>温柔</a>
+                            </li>
+                            <li>
+                                <span>经历：</span><a>[未解禁]</a>
+                            </li>
+                            <li>
+                                <span>现状：</span><a>主职学生，副职女仆</a>
+                            </li>
+                            <li>
+                                <span>口头禅：</span><a>“穿女仆装有什么奇怪的吗？”</a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="link-top" style="margin-top: 1%;margin-bottom: 2%; width: 65%;"></div>
+                    <div class="optionItem">
+                        <ul style="list-style-type:none;">
+                            <li>
+                                <span>画师：</span><a>无心</a>
+                            </li>
+                            <li>
+                                <span>Email：</span><a style="user-select: text;">728467180@qq.com</a>
+                            </li>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>
+
+
+
+            </div>
+            <style>
+                #settingHeader {
+                    width: 100%;
+                    height: 10%;
+                    color: rgb(211, 211, 212);
+                    display: absolute;
+                    left: 50%;
+                    font-size: 3.2vw;
+                }
+                
+                .link-top-thick {
+                    width: 90%;
+                    height: 0.2%;
+                    border-top: solid #d0d2d4 1px;
+                }
+                
+                .link-top {
+                    width: 90%;
+                    height: 0.1%;
+                    border-top: solid #d0d2d4 1px;
+                }
+                
+                .link-right {
+                    width: 5%;
+                    height: 30%;
+                    margin-left: 3%;
+                    margin-right: 3%;
+                    border-right: solid #d4d4d4 1px;
+                }
+                
+                .optionItem {
+                    width: 90%;
+                    height: 6%;
+                    color: rgb(190, 190, 190);
+                    font-size: 2vw;
+                    user-select: none;
+                }
+                
+                .optionItem a {
+                    cursor: pointer;
+                }
+            </style>
+        </div>
+        <div class="settingContent" id="page2" style="width: 100%; height: 100%;margin-left:10px; display: none;">
+            <div id="settingHeader">
+                关于软件说明
+            </div>
+            <div class="link-top-thick" style="margin-bottom: 2%;"></div>
+            <div class="pageContent">
+                <div>
+                    <div class="optionItem">
+                        <a style="cursor:default;"></a>
+                        <ul style="list-style-type:none;">
+                            <li>
+                                <span>软件制作：</span><a style="user-select: text;">FB-dtaker</a>
+                            </li>
+                            <li>
+                                <span>源码获取：</span><a href="https://github.com/Fb-dtalker/DesktopQbyElectron.git" target="_blank" style="color: rgb(189, 189, 189);user-select: text;">https://github.com/Fb-dtalker/DesktopQbyElectron.git</a>
+                            </li>
+                            <li>
+                                <span>新版本获取：</span><a href="https://github.com/Fb-dtalker/DesktopQbyElectron/releases" target="_blank" style="color: rgb(189, 189, 189);user-select: text;">https://github.com/Fb-dtalker/DesktopQbyElectron/releases</a>
+                            </li>
+                            <div class="link-top" style="margin-top: 1%;margin-bottom: 2%; width: 100%;"></div>
+                            <li>
+                                本软件的代码为基于Apache License 2.0的开源代码。但是图像和人物保留著作权不可用于商业活动【同人活动在允许范围内，但不得违反活动所在地的法律法规】。
+                            </li>
+                            <div class="link-top" style="margin-top: 1%;margin-bottom: 2%; width: 100%;"></div>
+                            <li>
+                                目前版本为最基础版本，只实现了三种效果，但是从设计上是希望能够直接兼容所有Web前端的特效效果并整理为一个调用体系。目前正在设计中。
+                                </br>以及最终目的在于设计桌面看板娘。
+                            </li>
+                            <div class="link-top" style="margin-top: 1%;margin-bottom: 1%; width: 100%;"></div>
+                            <li>
+                                日期：2020年10月5日04点29分。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <style>
+                #settingHeader {
+                    width: 100%;
+                    height: 10%;
+                    color: rgb(211, 211, 212);
+                    display: absolute;
+                    left: 50%;
+                    font-size: 3.2vw;
+                }
+                
+                .link-top-thick {
+                    width: 90%;
+                    height: 0.2%;
+                    border-top: solid #d0d2d4 1px;
+                }
+                
+                .link-top {
+                    width: 90%;
+                    height: 0.1%;
+                    border-top: solid #d0d2d4 1px;
+                }
+                
+                .link-right {
+                    width: 5%;
+                    height: 30%;
+                    margin-left: 3%;
+                    margin-right: 3%;
+                    border-right: solid #d4d4d4 1px;
+                }
+                
+                .optionItem {
+                    width: 90%;
+                    height: 6%;
+                    color: rgb(190, 190, 190);
+                    font-size: 2vw;
+                    user-select: none;
+                }
+                
+                .optionItem a {
+                    cursor: pointer;
+                }
+            </style>
+        </div>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+        
+        body {
+            max-width: 1920px;
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            position: absolute;
+            background-color: rgb(49, 49, 49);
+        }
+        
+        #btn {
+            position: absolute;
+            top: 0%;
+            left: 15%;
+            width: 15%;
+            height: 100%;
+            border: 0;
+            background: #aa334500;
+        }
+        
+        .p4button {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+            /*flex 布局*/
+            display: flex;
+            /*实现垂直居中*/
+            align-items: center;
+            /*实现水平居中*/
+            justify-content: center;
+        }
+        
+        .box {
+            float: left;
+            position: relative;
+            left: 0;
+            height: 100%;
+            width: 15%;
+            margin-left: 0;
+            margin-right: 30px;
+            display: block;
+            -moz-transition: margin-left 1s;
+            transition: margin-left 1s;
+            border-radius: 0px 0px 30px 0px;
+            background-color: rgb(30, 30, 30);
+            box-shadow: 3px 1px 12px rgba(158, 158, 158, 1);
+        }
+        
+        .item {
+            /*flex 布局*/
+            display: flex;
+            /*实现垂直居中*/
+            align-items: center;
+            /*实现水平居中*/
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            height: 60px;
+            color: whitesmoke;
+            background-color: rgb(37, 37, 38);
+            text-align: center;
+            font-size: 1.8vw;
+            border-top: 1px solid rgb(120, 133, 120);
+            border-right: 1px solid rgb(120, 133, 120);
+            border-bottom: 1px solid rgb(120, 133, 120);
+            cursor: pointer;
+        }
+        
+        .item :active {
+            color: rgb(17, 17, 17);
+        }
+        
+        #itemBox :hover {
+            height: 80px;
+            width: 110%;
+            background-color: rgb(51, 51, 51);
+            /*flex 布局*/
+            display: flex;
+            /*实现垂直居中*/
+            align-items: center;
+            /*实现水平居中*/
+            justify-content: center;
+            position: relative;
+            text-align: center;
+            font-size: 2.2vw;
+            border-radius: 0px 19px 19px 0px;
+            transition-duration: 0.3s;
+        }
+        
+        #itemBox :active {
+            background-color: snow;
+        }
+        
+        .title {
+            width: 100%;
+            height: 10%;
+            color: seashell;
+            display: flex;
+            /*实现垂直居中*/
+            align-items: center;
+            /*实现水平居中*/
+            justify-content: center;
+            font-size: 2.8vw;
+        }
+    </style>
+    <script>
+        var box = document.getElementById("test")
+        var btn = document.getElementById("btn")
+        btn.onmouseenter = function() {
+            box.style['margin-left'] = 0 + "%";
+        }
+        box.onmouseleave = function() {
+            box.style['margin-left'] = -16 + "%";
+        }
+        box.style['margin-left'] = -16 + "%";
+        box.clientHeight = document.documentElement.clientWidth;
+    </script>
+</body>
+
+<script>
+    let ui = document.getElementById('ui');
+
+    //这里控制页面的加载
+    function getPageList() {
+        return document.getElementsByClassName("settingContent");
+    }
+
+    function showPage(pageIndex) {
+        let pageList = getPageList();
+        for (let index = 0; index < pageList.length; ++index) {
+            pageList[index].style.display = 'none';
+        }
+
+        let page = document.getElementById('page' + pageIndex);
+        page = page || document.getElementById('page0')
+
+        page.style.display = 'inline';
+    }
+
+    showPage(0);
+</script>
+
+</html>

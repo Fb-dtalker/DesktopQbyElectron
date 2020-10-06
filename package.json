@@ -1,0 +1,19 @@
+{
+    "devDependencies": {
+        "electron": "^8.5.1"
+    },
+    "name": "desktopq",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "packager": "electron-packager . DesktopQv0_1 --win --out=./out --arch=x64 --icon=xiwu_head.ico --app-version=0.0.1 --download.mirrorOptions.mirror=https://npm.taobao.org/mirrors/electron/ --download.mirrorOptions.customDir=8.5.1"
+    },
+    "author": "fb-dtalker",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "size-sensor": "^1.0.1"
+    }
+}

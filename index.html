@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Desktop Q</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link rel="stylesheet" href="code/css/index.css" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="code/js/utils.js"></script>
+    <script src="code/js/canvasnest.js"></script>
+    <script src="code/lib/three.min.js"></script>
+    <script src="code/js/three-waves.min.js"></script>
+    <script src="code/js/dynamic_star/dynamicstar.js"></script>
+    <script src="code/desktopSys/dqutils.js"></script>
+    <script src="code/desktopSys/dqwebpage.js"></script>
+</head>
+
+<body id="Body">
+
+    <!--style="-webkit-app-region: drag"-->
+
+</body>
+
+<script>
+    let InitWindow = function(targetWindow) {
+        targetWindow.setAlwaysOnTop(true, "pop-up-menu")
+        targetWindow.setFullScreen(true)
+    }
+
+    let win = require('electron').remote.getCurrentWindow();
+
+    InitWindow(win);
+    let webpage = new DqWebpage(win, document);
+    webpage.AddMouseEventListener(Body, true);
+    webpage.AddRclickEvent(document);
+
+    webpage.AddEventFunction("showEffect", (event, param = {}) => {
+        let effect = webpage.GetEffect(param.key);
+        if (webpage.GetEffect(param.key) == null) {
+            return;
+        }
+        effect.showBackground();
+    });
+    webpage.AddEventFunction("hideEffect", (event, param = {}) => {
+        let effect = webpage.GetEffect(param.key);
+        if (webpage.GetEffect(param.key) == null) {
+            return;
+        }
+        effect.hideBackground();
+    });
+
+    webpage.AddEffect("nest", nestBackground());
+    webpage.AddEffect("three-waves", three_wavesBackground());
+    webpage.AddEffect("dynamic-stars", dynamicStarBackground());
+
+    // let dqConfig = DqUtils.GetGlobal().dqConfig;
+    // webpage.SendMessage4r2m("test", null, dqConfig.GetConfig("test"));
+
+    // DqUtils.ThrowMessageBox("测试读取配置", dqConfig.GetConfig("test"));
+    // webpage.SendMessage4r2m("setConfig", null, {
+    //     key: "test",
+    //     value: "testValue"
+    // })
+</script>
+
+</html>

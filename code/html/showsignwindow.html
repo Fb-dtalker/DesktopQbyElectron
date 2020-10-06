@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>测试显示器</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+</head>
+
+<body>
+    <div style="width: 300px;height: 300px;background-color: blue;position: absolute;top: 0;left: 0;">
+        <b id="text" style="font-size: 150px; color: rgb(233, 233, 212); text-align: center;">
+            1
+        </b>
+    </div>
+</body>
+
+<script>
+    let win = require('electron').remote.getCurrentWindow();
+    let b = document.getElementById('text');
+    b.innerHTML = "" + (win.WindowIndex == null ? 0 : win.WindowIndex);
+</script>
+
+</html>
