@@ -22,19 +22,19 @@ A desktop beautification and desk pet software running on electron.
 
 **预览：**
 
-![](.\doc\images\DesktopQv0_1_effects.png)
+![](./doc/images/DesktopQv0_1_effects.png)
 
 有三种效果在画面中，可以分别设置。
 
 
 
-![](.\doc\images\DesktopQv0_1_panel.png)
+![](./doc/images/DesktopQv0_1_panel.png)
 
 设置面板。
 
 
 
-![](.\doc\images\DesktopQv0_1_tray.png)
+![](./doc/images/DesktopQv0_1_tray.png)
 
 托盘。
 
